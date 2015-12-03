@@ -1,7 +1,7 @@
 
 
 class Belmont
-	attr_reader :x, :y, :backwards, :standing
+	attr_accessor :x, :y, :backwards, :standing
 
 	def initialize(animation)
 		@animation = animation
@@ -11,15 +11,11 @@ class Belmont
 	end
 
 	def forward
-		# @backwards = false
 		@x += 1
-		# @standing = false
 	end
 
 	def backward
-		# @backwards = true
 		@x -= 1
-		# @standing = false
 	end
 
 	def animate(animation)

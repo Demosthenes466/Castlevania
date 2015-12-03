@@ -3,9 +3,13 @@ require_relative "belmont"
 require 'gosu'
 
 class Castlevania < Gosu::Window
-	attr_accessor :backwards, :standing
+	attr_accessor :backwards, :standing, :x
 
 	def initialize
+		@x = x
+		@screenx = 10
+		@xpos = 0
+		@ypos = 0
 		super 600, 360
 		@background = Gosu::Image.new("background.png", :tileable => true)
 		@character_standing = Gosu::Image.new("belmont.png", :tileable => true)
@@ -18,19 +22,26 @@ class Castlevania < Gosu::Window
 	def update
 		if Gosu::button_down? Gosu::KbRight
 			@belmont.forward
-			@backwards = false
-			@standing = false 
+				@backwards = false
+				@standing = false 
+				@screenx += 1
+			if 400 <= @screenx
+				@belmont.x -= 1
+				@xpos -= 1
+				@screenx -= 1
+			end
 		elsif Gosu::button_down? Gosu::KbLeft
 			@belmont.backward
 			@backwards = true
 			@standing = false
+			@screenx -= 1
 		else
 			@standing = true
 		end
 	end
 
 	def draw
-		@background.draw(0,0,0)
+		@background.draw(@xpos,0,0)
 		if (@backwards ==  false && @standing == false)
 			@belmont.animate(@character_forward)
 		elsif (@backwards == true && @standing == false)
