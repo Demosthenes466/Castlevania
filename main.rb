@@ -3,11 +3,9 @@ require_relative "belmont"
 require 'gosu'
 
 class Castlevania < Gosu::Window
-	attr_accessor :backwards, :standing, :x
+	attr_accessor :backwards, :standing, :x, :y
 
 	def initialize
-		@x = x
-		@screenx = 10
 		@xpos = 0
 		@ypos = 0
 		super 600, 360
@@ -17,33 +15,50 @@ class Castlevania < Gosu::Window
 		@character_backward = Gosu::Image::load_tiles("cstback.png", 20, 60)
 		@belmont = Belmont.new(@character_anim)
 		@backwards = false
+		@jump = false
 	end
 
 	def update
+		if Gosu::button_down? Gosu::KbSpace
+				@belmont.jump = true
+		end
+
 		if Gosu::button_down? Gosu::KbRight
 			@belmont.forward
-				@backwards = false
-				@standing = false 
-				@screenx += 1
-			if 400 <= @screenx
-				@belmont.x -= 1
-				@xpos -= 1
-				@screenx -= 1
-			end
+			@backwards = false
+			@standing = false 
+			@belmont.screenx += 1
+			
 		elsif Gosu::button_down? Gosu::KbLeft
 			@belmont.backward
 			@backwards = true
 			@standing = false
-			@screenx -= 1
+			@belmont.screenx -= 1
 		else
 			@standing = true
 		end
+		if 400 <= @belmont.screenx
+				@belmont.x -= 1
+				@xpos -= 1
+				@belmont.screenx -= 1
+			end
+
+		
 	end
 
 	def draw
+		# puts @belmont.x
+		# puts @belmont.y
 		@background.draw(@xpos,0,0)
 		if (@backwards ==  false && @standing == false)
-			@belmont.animate(@character_forward)
+			if @belmont.jump == true
+				@belmont.jump_forward
+				@belmont.draw(@character_standing)
+				puts @belmont.velocity
+			else
+				@belmont.set_vel
+				@belmont.animate(@character_forward)
+			end
 		elsif (@backwards == true && @standing == false)
 			@belmont.animate(@character_backward)
 		else
