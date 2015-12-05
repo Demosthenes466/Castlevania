@@ -1,33 +1,38 @@
 
 
 class Belmont
-	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx
+	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground
 
 	def initialize(animation)
+		@on_ground = true
 		@screenx = 10
 		@animation = animation
 		@x = 10
 		@y = 283
 		@standing = true
-		@velocity = 12
+		@velocity = 5
 		@jump = false
 	end
 
-	def jump_forward
-		# @velocity = -5
-		# @x += 1
+	def jump_action
 		@y -= @velocity 
 		@velocity -= 0.4
-		# @screenx += 1
-
 		if @y > 283
 			@y = 283
 			@velocity = 0
 			@jump = false
+			set_vel
 		end
-
-		# pic.draw(@x, @y, 1)
 	end
+
+	def ground
+		if @y == 283
+			@on_ground = true
+		else
+			@on_ground = false
+		end
+	end
+
 
 	def set_vel
 		@velocity = 5

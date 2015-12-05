@@ -3,7 +3,7 @@ require_relative "belmont"
 require 'gosu'
 
 class Castlevania < Gosu::Window
-	attr_accessor :backwards, :standing, :x, :y
+	attr_accessor :backwards, :standing, :x, :y, :on_ground
 
 	def initialize
 		@xpos = 0
@@ -19,16 +19,15 @@ class Castlevania < Gosu::Window
 	end
 
 	def update
-		if Gosu::button_down? Gosu::KbSpace
-				@belmont.jump = true
-		end
+		
 
 		if Gosu::button_down? Gosu::KbRight
-			@belmont.forward
-			@backwards = false
-			@standing = false 
-			@belmont.screenx += 1
-			
+			if @belmont.jump == false
+				@belmont.forward
+				@backwards = false
+				@standing = false 
+				@belmont.screenx += 1
+			end
 		elsif Gosu::button_down? Gosu::KbLeft
 			@belmont.backward
 			@backwards = true
@@ -37,30 +36,36 @@ class Castlevania < Gosu::Window
 		else
 			@standing = true
 		end
+
+		if (Gosu::button_down? Gosu::KbSpace) 
+			@belmont.jump = true
+		end
+
 		if 400 <= @belmont.screenx
 				@belmont.x -= 1
 				@xpos -= 1
 				@belmont.screenx -= 1
-			end
-
-		
-	end
+			end	
+	end 
 
 	def draw
-		# puts @belmont.x
-		# puts @belmont.y
+		# puts @belmont.jump
 		@background.draw(@xpos,0,0)
-		if (@backwards ==  false && @standing == false)
-			if @belmont.jump == true
-				@belmont.jump_forward
-				@belmont.draw(@character_standing)
-				puts @belmont.velocity
-			else
-				@belmont.set_vel
+		if (@backwards == false && @belmont.jump == true && @standing == false)
+			@belmont.jump_action
+			@belmont.x += 2
+			@belmont.draw(@character_standing)
+		elsif (@backwards == true && @belmont.jump == true && @standing == false)
+			@belmont.jump_action
+			@belmont.x -= 1
+			@belmont.draw(@character_standing)
+		elsif (@belmont.jump == true && @standing == true)
+			@belmont.jump_action
+			@belmont.draw(@character_standing)
+		elsif (@backwards ==  false && @standing == false)
 				@belmont.animate(@character_forward)
-			end
 		elsif (@backwards == true && @standing == false)
-			@belmont.animate(@character_backward)
+				@belmont.animate(@character_backward)
 		else
 			@belmont.draw(@character_standing)
 		end
