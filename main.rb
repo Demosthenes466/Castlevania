@@ -10,19 +10,19 @@ class Castlevania < Gosu::Window
 		@xpos = 0
 		@ground_level = 283
 		super 600, 360
-		@background = Gosu::Image.new("background.png", :tileable => true)
+		@background = Gosu::Image.new("background2.png", :tileable => true)
 
-		@character_standing = Gosu::Image.new("belmont.png", :tileable => true)
-		@character_forward = Gosu::Image::load_tiles("cst.png", 20, 60)
-		@character_backward = Gosu::Image::load_tiles("cstback.png", 20, 60)
-		@character_whipping = Gosu::Image::load_tiles("whip2.png", 32, 60)
+		@character_standing = Gosu::Image.new("belmont copy.png", :tileable => true)
+		@character_forward = Gosu::Image::load_tiles("cst.png", 30, 60)
+		@character_backward = Gosu::Image::load_tiles("cstback.png", 30, 60)
+		@character_whipping = Gosu::Image::load_tiles("whippingL.png", 80, 60)
 
 		@belmont = Belmont.new(@character_anim)
 		@backwards = false
 		@jump = false
-		@torch = Gosu::Image.new("belmont.png", :tileable => true)
+		@torch = Gosu::Image.new("Stone Torch.png", :tileable => true)
 		@entry_stone_torches = Array.new
-		@torchx = 54
+		@torchx = 44
 		for i in 0...5 do 
 			@entry_stone_torches.push(Stone_Torch.new(@torchx, @ground_level))
 			@torchx += 220
@@ -65,10 +65,13 @@ class Castlevania < Gosu::Window
 
 	def draw
 		@background.draw(@xpos,0,0)
+		for i in 0...@entry_stone_torches.length do
+			@entry_stone_torches[i].draw(@torch)
+		end
 		if (@backwards == false && @belmont.whip == true)
 			@belmont.animate(@character_whipping, 125)
 			current_time = Time.new.to_i
-			if  Time.new(now).to_i <= current_time + 
+			if  Time.new().to_i >= current_time + 3 
 				@belmont.whip = false
 			end
 		elsif (@backwards == false && @belmont.jump == true && @standing == false)
@@ -90,9 +93,7 @@ class Castlevania < Gosu::Window
 			@belmont.draw(@character_standing)
 		end
 
-		for i in 0...@entry_stone_torches.length do
-			@entry_stone_torches[i].draw(@torch)
-		end
+		
 
 	end
 
