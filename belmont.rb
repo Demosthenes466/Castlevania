@@ -1,7 +1,7 @@
 
 
 class Belmont
-	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground
+	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground, :whip 
 
 	def initialize(animation)
 		@on_ground = true
@@ -12,6 +12,7 @@ class Belmont
 		@standing = true
 		@velocity = 5
 		@jump = false
+		@whip = false
 	end
 
 	def jump_action
@@ -25,40 +26,30 @@ class Belmont
 		end
 	end
 
-	def ground
-		if @y == 283
-			@on_ground = true
-		else
-			@on_ground = false
-		end
+	def whip_action
+
 	end
 
 
 	def set_vel
 		@velocity = 5
 	end
-# if @y <= 283
-		# 	@y = 283
-		# 	vy = 0
-		# end
-		
-	
 
 	def forward
 		@x += 1
-		# @screenx += 1
 	end
 
 	def backward
 		@x -= 1
 	end
 
-	def animate(animation)
-		img = animation[Gosu::milliseconds / 150 % animation.size];
+	def animate(animation, speed)
+		img = animation[Gosu::milliseconds / speed % animation.size];
 		img.draw(@x, @y, 1)
 	end
 
 	def draw(pic)
 		pic.draw(@x, @y, 1)
 	end
+
 end
