@@ -28,28 +28,38 @@ class Castlevania < Gosu::Window
 			@torchx += 220
 		end
 
+		@seconds = 0
+		@last_time = Gosu::milliseconds()
+		@start_time = 0
+
 
 	end
 
 	def update
-		if Gosu::button_down? Gosu::KbRightAlt
-			@belmont.whip = true
-		elsif Gosu::button_down? Gosu::KbRight
-			if @belmont.jump == false
+		@standing = true
+		
+		if Gosu::button_down? Gosu::KbRight
+			# if @belmont.jump == false
 				@belmont.forward
 				@backwards = false
 				@standing = false 
-			end
-		elsif Gosu::button_down? Gosu::KbLeft
-			@belmont.backward
-			@backwards = true
-			@standing = false
-		else
-			@standing = true
+			# end
 		end
-
+		if Gosu::button_down? Gosu::KbLeft
+			# if @belmont.jump == false
+				@belmont.backward
+				@backwards = true
+				@standing = false
+			# end
+		end
+		
 		if (Gosu::button_down? Gosu::KbSpace) 
 			@belmont.jump = true
+		end
+
+		if Gosu::button_down? Gosu::KbRightAlt
+			@start_time = Gosu.milliseconds
+			@belmont.whip = true
 		end
 
 			
@@ -67,19 +77,25 @@ class Castlevania < Gosu::Window
 		for i in 0...@entry_stone_torches.length do
 			@entry_stone_torches[i].draw(@torch)
 		end
-		if (@backwards == false && @belmont.whip == true)
-			@belmont.animate(@character_whipping, 125)
-			current_time = Time.new.to_i
-			if  Time.new().to_i >= current_time + 3 
+		if (@backwards == false && @belmont.whip == true && @belmont.jump == false)
+			if Gosu::milliseconds - @start_time < 300
+				@belmont.animate(@character_whipping, 125)
+			else
+				@belmont.whip = false
+			end
+		elsif (@backwards == false && @belmont.whip == true && @belmont.jump == true)
+			@belmont.jump_action
+			if Gosu::milliseconds - @start_time < 0
+				@belmont.animate(@character_whipping, 125)
+			end
+			if Gosu::milliseconds - @start_time < 1000
 				@belmont.whip = false
 			end
 		elsif (@backwards == false && @belmont.jump == true && @standing == false)
 			@belmont.jump_action
-			@belmont.x += 1.5
 			@belmont.draw(@character_standing)
 		elsif (@backwards == true && @belmont.jump == true && @standing == false)
 			@belmont.jump_action
-			@belmont.x -= 1.5
 			@belmont.draw(@character_standing)
 		elsif (@belmont.jump == true && @standing == true)
 			@belmont.jump_action

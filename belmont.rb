@@ -26,9 +26,9 @@ class Belmont
 		end
 	end
 
-	def whip_action
+	def update
+		end
 
-	end
 
 
 	def set_vel
