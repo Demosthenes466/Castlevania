@@ -26,7 +26,6 @@ class Castlevania < Gosu::Window
 		for i in 0...5 do 
 			@entry_stone_torches.push(Stone_Torch.new(@torchx, @ground_level))
 			@torchx += 220
-			puts "#{@entry_stone_torches[i].torchx}"
 		end
 
 
@@ -97,7 +96,6 @@ class Castlevania < Gosu::Window
 	end
 
 	def button_down(id)
-		# puts id
 		close if id == Gosu::KbEscape
 	end
 
