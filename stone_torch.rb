@@ -8,7 +8,7 @@ class Stone_Torch
 	end
 
 	def draw(pic)
-		pic.draw(@torchx, @y, 1)
+		pic.draw(@torchx, @y - 5, 1)
 	end
 end
 
