@@ -30,7 +30,7 @@ class Castlevania < Gosu::Window
 			@entry_stone_torches.push(Stone_Torch.new(@torchx, @ground_level))
 			@torchx += 220
 		end
-
+		@jumping = false
 		@seconds = 0
 		@last_time = Gosu::milliseconds()
 		@start_time = 0
@@ -54,7 +54,13 @@ class Castlevania < Gosu::Window
 		end
 		
 		if (Gosu::button_down? Gosu::KbSpace) 
-			@belmont.jump = true
+			# @start_time = Gosu.milliseconds
+			if (!@jumping)
+				@belmont.jump = true
+			end
+			# else
+			# 	@belmont.jump = false
+			# end
 		end
 
 		if Gosu::button_down? Gosu::KbRightAlt
@@ -100,18 +106,23 @@ class Castlevania < Gosu::Window
 			end
 		elsif (!@backwards && @belmont.whip && @belmont.jump)
 			@belmont.jump_action
-			if Gosu::milliseconds - @start_time < 0
-				@belmont.animate(Gosu::milliseconds, @character_whipping, 125)
-			end
-			if Gosu::milliseconds - @start_time < 1000
-				@belmont.whip = false
-			end
+			@belmont.draw(@Fuckeverything)
 		elsif (@backwards == false && @belmont.jump == true && @standing == false)
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
 		elsif (@backwards == true && @belmont.jump == true && @standing == false)
+			@start_time = Gosu.milliseconds
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
+			if @belmont.y == @ground_level
+				@jumping = true
+				if Gosu::milliseconds - @start_time < 200
+					@belmont.jump = false
+				else
+					@jumping = false
+				end
+			end
+			puts @jumping
 		elsif (@belmont.jump == true && @standing == true)
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
