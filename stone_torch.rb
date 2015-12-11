@@ -1,14 +1,14 @@
 
 class Stone_Torch
-	attr_accessor :torchx, :y
+	attr_accessor :x, :y
 
-	def initialize(torchx, y)
-		@torchx = torchx
+	def initialize(x, y)
+		@x = x
 		@y = y
 	end
 
 	def draw(pic)
-		pic.draw(@torchx, @y - 5, 1)
+		pic.draw(@x, @y - 5, 1)
 	end
 end
 

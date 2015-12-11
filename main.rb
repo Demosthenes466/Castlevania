@@ -4,7 +4,7 @@ require_relative "Stone_torch"
 require 'gosu'
 
 class Castlevania < Gosu::Window
-	attr_accessor :backwards, :standing, :x, :y, :on_ground, :torchx
+	attr_accessor :backwards, :standing, :x, :y, :on_ground, :x, :collides
 
 	def initialize
 		@xpos = 0
@@ -16,7 +16,7 @@ class Castlevania < Gosu::Window
 		@character_standing_backward = Gosu::Image.new("belmontback.png", :tileable => true)
 		@character_forward = Gosu::Image::load_tiles("cst.png", 30, 60)
 		@character_backward = Gosu::Image::load_tiles("cstback.png", 30, 60)
-		@character_whipping = Gosu::Image::load_tiles("bw.png",35, 60)
+		@character_whipping = Gosu::Image::load_tiles("bw.png", 35, 60)
 		@Fuckeverything = Gosu::Image.new("FuckEverything.png", :tileable => true)
 		@FuckeverythingBackwards = Gosu::Image.new("FuckEverythingBackwards.png", :tileable => true)
 
@@ -25,10 +25,10 @@ class Castlevania < Gosu::Window
 		@jump = false
 		@torch = Gosu::Image.new("Stone Torch.png", :tileable => true)
 		@entry_stone_torches = Array.new
-		@torchx = 44
+		@x = 44
 		for i in 0...5 do 
-			@entry_stone_torches.push(Stone_Torch.new(@torchx, @ground_level))
-			@torchx += 220
+			@entry_stone_torches.push(Stone_Torch.new(@x, @ground_level))
+			@x += 220
 		end
 		@jumping = false
 		@seconds = 0
@@ -66,25 +66,29 @@ class Castlevania < Gosu::Window
 		if Gosu::button_down? Gosu::KbRightAlt
 			@start_time = Gosu.milliseconds
 			@belmont.whip = true
+			@belmont.collides(@entry_stone_torches)
 		end
 
-	if @xpos > -571		
-		if 400 <= @belmont.x
-			@belmont.x -= 1.5
-			for i in 0...@entry_stone_torches.length do
-				@entry_stone_torches[i].torchx -= 1.5
-			end
-			@xpos -= 1.5
-		end 
+		if @xpos > -571		
+			if 400 <= @belmont.x
+				@belmont.x -= 1.5
+				for i in 0...@entry_stone_torches.length do
+					@entry_stone_torches[i].x -= 1.5
+				end
+				@xpos -= 1.5
+			end 
 
-		if 10 >= @belmont.x && @xpos > 1
-			for i in 0...@entry_stone_torches.length do
-				@entry_stone_torches[i].torchx += 1.5
+			if 10 >= @belmont.x && @xpos > 1
+				for i in 0...@entry_stone_torches.length do
+					@entry_stone_torches[i].x += 1.5
+				end
+				@xpos += 1.5
 			end
-			@xpos += 1.5
-		end
-	end	
-		puts @xpos
+		end	
+
+		
+		
+
 	end 
 
 	def draw
@@ -111,18 +115,8 @@ class Castlevania < Gosu::Window
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
 		elsif (@backwards == true && @belmont.jump == true && @standing == false)
-			@start_time = Gosu.milliseconds
 			@belmont.jump_action
-			@belmont.draw(@character_standing_forward)
-			if @belmont.y == @ground_level
-				@jumping = true
-				if Gosu::milliseconds - @start_time < 200
-					@belmont.jump = false
-				else
-					@jumping = false
-				end
-			end
-			puts @jumping
+			@belmont.draw(@character_standing_backward)
 		elsif (@belmont.jump == true && @standing == true)
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
@@ -138,7 +132,9 @@ class Castlevania < Gosu::Window
 			end
 		end
 
-		
+		for i in 0...@entry_stone_torches.length
+			puts @entry_stone_torches[i].x
+		end
 
 	end
 
