@@ -1,7 +1,7 @@
 
 
 class Belmont
-	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground, :whip, :xpos, :collides, :torchx
+	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground, :whip, :xpos, :collides, :torchx, :speed
 
 	def initialize(animation)
 		@on_ground = true
@@ -14,11 +14,12 @@ class Belmont
 		@jump = false
 		@whip = false
 		@collides = false
+		@speed = 1
 	end
 
 	def jump_action
 		@y -= @velocity 
-		@velocity -= 0.4
+		@velocity -= 0.3
 		if @y > 283
 			@y = 283
 			@velocity = 0
@@ -32,12 +33,12 @@ class Belmont
 	end
 
 	def forward
-			@x += 1
+			@x += @speed
 	end
 
 	def backward
 		if @x >= 10
-			@x -= 1
+			@x -= @speed
 		end
 	end
 

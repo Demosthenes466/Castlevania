@@ -11,6 +11,7 @@ class Castlevania < Gosu::Window
 		@ground_level = 283
 		super 600, 360
 		@background = Gosu::Image.new("background2.png", :tileable => true)
+		@level = 0
 
 		@character_standing_forward = Gosu::Image.new("belmont copy.png", :tileable => true)
 		@character_standing_backward = Gosu::Image.new("belmontback.png", :tileable => true)
@@ -23,11 +24,12 @@ class Castlevania < Gosu::Window
 		@belmont = Belmont.new(@character_anim)
 		@backwards = false
 		@jump = false
-		@torch = Gosu::Image.new("Stone Torch.png", :tileable => true)
+		@stone_torch = Gosu::Image.new("Stone Torch.png", :tileable => true)
+		@wall_torch = Gosu::Image.new("TorchN.png", :tileable => true)
 		@entry_stone_torches = Array.new
 		@x = 44
 		for i in 0...5 do 
-			@entry_stone_torches.push(Stone_Torch.new(@x, @ground_level))
+			@entry_stone_torches.push(Torch.new(@x, @ground_level))
 			@x += 220
 		end
 		@jumping = false
@@ -40,6 +42,10 @@ class Castlevania < Gosu::Window
 
 	def update
 		@standing = true
+		if Gosu::button_down? Gosu::KbP
+			@belmont.speed = 5
+		end
+
 		if Gosu::button_down? Gosu::KbRight
 				@belmont.forward
 				@backwards = false
@@ -86,6 +92,20 @@ class Castlevania < Gosu::Window
 			end
 		end	
 
+		if @belmont.x > 518
+			@level = 1
+			@background = Gosu::Image.new("NewLevel.png", :tileable => true)
+			@belmont.x = 10
+			@belmont.y = 278
+			@x = 44
+			@entry_stone_torches = []
+			@wall_torches = Array.new
+			for i in 0...5 do 
+				@wall_torches.push(Torch.new(@x, 270))
+				@x += 220
+			end
+		end
+
 		
 		
 
@@ -93,8 +113,14 @@ class Castlevania < Gosu::Window
 
 	def draw
 		@background.draw(@xpos,0,0)
-		for i in 0...@entry_stone_torches.length do
-			@entry_stone_torches[i].draw(@torch)
+		if @level == 0
+			for i in 0...@entry_stone_torches.length do
+				@entry_stone_torches[i].draw(@stone_torch)
+			end
+		elsif @level == 1
+			for i in 0...@wall_torches.length do
+				@wall_torches[i].draw(@wall_torch)
+			end
 		end
 		if (@backwards == false && @belmont.whip == true && @belmont.jump == false)
 			if Gosu::milliseconds - @start_time < 300
@@ -111,6 +137,9 @@ class Castlevania < Gosu::Window
 		elsif (!@backwards && @belmont.whip && @belmont.jump)
 			@belmont.jump_action
 			@belmont.draw(@Fuckeverything)
+		elsif (@backwards && @belmont.whip && @belmont.jump)
+			@belmont.jump_action
+			@belmont.draw(@FuckeverythingBackwards)
 		elsif (@backwards == false && @belmont.jump == true && @standing == false)
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
@@ -132,10 +161,11 @@ class Castlevania < Gosu::Window
 			end
 		end
 
-		for i in 0...@entry_stone_torches.length
-			puts @entry_stone_torches[i].x
-		end
-
+		# for i in 0...@entry_stone_torches.length
+		# 	puts @entry_stone_torches[i].x
+		# end
+puts "Xpos: #{@xpos}"
+puts "BelX: #{@belmont.x}"
 	end
 
 	def button_down(id)

@@ -1,5 +1,5 @@
 
-class Stone_Torch
+class Torch
 	attr_accessor :x, :y
 
 	def initialize(x, y)
