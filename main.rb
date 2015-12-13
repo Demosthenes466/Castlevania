@@ -111,65 +111,46 @@ class Castlevania < Gosu::Window
 			end
 		end
 
-		if LevelOne? && EndOfFirstScreen? && @belmont.x > 518
+		if LevelOne? && EndOfFirstScreen? && @belmont.x > 5
 			@level = 1
 			@background = Gosu::Image.new("NewLevel.png", :tileable => true)
 			@belmont.x = 10
 			@belmont.y = 278
 		end
-
-		
-		
-
-		
-		
-
 	end 
 
 	def draw
 		@background.draw(@xpos,0,0)
-		if @level == 0
-			for i in 0...@entry_stone_torches.length do
-				@entry_stone_torches[i].draw(@stone_torch)
-			end
-		elsif @level == 1
-			for i in 0...@wall_torches.length do
-				@wall_torches[i].draw(@wall_torch)
-			end
+		if LevelOne?
+			DrawObjects(@entry_stone_torches)
+		else
+			DrawObjects(@wall_torches)
 		end
-		if (@backwards == false && @belmont.whip == true && @belmont.jump == false)
-			if Gosu::milliseconds - @start_time < 300
-				@belmont.draw(@Fuckeverything)
-			else
-				@belmont.whip = false
-			end
-		elsif (@backwards == true && @belmont.whip == true && @belmont.jump == false)
-			if Gosu::milliseconds - @start_time < 200
-				@belmont.draw(@FuckeverythingBackwards)
-			else
-				@belmont.whip = false
-			end
-		elsif (!@backwards && @belmont.whip && @belmont.jump)
+		if ForwardWhipping?
+			WhipForward()
+		elsif BackwardWhipping?
+			WhipBackward()
+		elsif ForwardWhipJump?
 			@belmont.jump_action
 			@belmont.draw(@Fuckeverything)
-		elsif (@backwards && @belmont.whip && @belmont.jump)
+		elsif BackwardWhipJump?
 			@belmont.jump_action
 			@belmont.draw(@FuckeverythingBackwards)
-		elsif (@backwards == false && @belmont.jump == true && @standing == false)
+		elsif ForwardJumping?
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
-		elsif (@backwards == true && @belmont.jump == true && @standing == false)
+		elsif BackwardJumping?
 			@belmont.jump_action
 			@belmont.draw(@character_standing_backward)
-		elsif (@belmont.jump == true && @standing == true)
+		elsif StraightJump?
 			@belmont.jump_action
 			@belmont.draw(@character_standing_forward)
-		elsif (@backwards ==  false && @standing == false)
+		elsif WalkingForward?
 				@belmont.animate(Gosu::milliseconds, @character_forward, 150)
-		elsif (@backwards == true && @standing == false)
+		elsif WalkingBackward?
 				@belmont.animate(Gosu::milliseconds, @character_backward, 150)
 		else
-			if @backwards == false
+			if !@backwards
 				@belmont.draw(@character_standing_forward)
 			else
 				@belmont.draw(@character_standing_backward)
@@ -220,6 +201,65 @@ private
 	def LevelOne?
 		@level == 0
 	end
+
+	def ForwardWhipping?
+		!@backwards && @belmont.whip && !@belmont.jump
+	end
+
+	def BackwardWhipping?
+		@backwards && @belmont.whip && !@belmont.jump
+	end
+
+	def ForwardWhipJump?
+		(!@backwards && @belmont.whip && @belmont.jump)
+	end
+
+	def BackwardWhipJump?
+		(@backwards && @belmont.whip && @belmont.jump)
+	end
+
+	def ForwardJumping?
+		(!@backwards && @belmont.jump && !@standing)
+	end
+
+	def BackwardJumping?
+		(@backwards && @belmont.jump && !@standing)
+	end
+
+	def StraightJump?
+		(@belmont.jump && @standing)
+	end
+
+	def WalkingForward?
+		(!@backwards && !@standing)
+	end
+
+	def WalkingBackward?
+		(@backwards && !@standing)
+	end
+
+	def WhipForward()
+		if Gosu::milliseconds - @start_time < 300
+			@belmont.draw(@Fuckeverything)
+		else
+			@belmont.whip = false
+		end
+	end
+
+	def WhipBackward()
+		if Gosu::milliseconds - @start_time < 200
+			@belmont.draw(@FuckeverythingBackwards)
+		else
+			@belmont.whip = false
+		end
+	end
+
+	def DrawObjects(array)
+		for i in 0...array.length do
+			array[i].draw(@stone_torch)
+		end
+	end
+
 
 
 window = Castlevania.new
