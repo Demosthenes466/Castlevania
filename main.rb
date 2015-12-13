@@ -28,9 +28,17 @@ class Castlevania < Gosu::Window
 		@wall_torch = Gosu::Image.new("TorchN.png", :tileable => true)
 		@entry_stone_torches = Array.new
 		@x = 44
+
 		for i in 0...5 do 
 			@entry_stone_torches.push(Torch.new(@x, @ground_level))
 			@x += 220
+		end
+
+		@x = 44
+		@wall_torches = Array.new
+		for i in 0...5 do 
+			@wall_torches.push(Torch.new(@x, 270))
+			@x += 250
 		end
 		@jumping = false
 		@seconds = 0
@@ -50,23 +58,17 @@ class Castlevania < Gosu::Window
 				@belmont.forward
 				@backwards = false
 				@standing = false 
-			# end
 		end
 		if Gosu::button_down? Gosu::KbLeft
 				@belmont.backward
 				@backwards = true
 				@standing = false
-			# end
 		end
 		
 		if (Gosu::button_down? Gosu::KbSpace) 
-			# @start_time = Gosu.milliseconds
 			if (!@jumping)
 				@belmont.jump = true
 			end
-			# else
-			# 	@belmont.jump = false
-			# end
 		end
 
 		if Gosu::button_down? Gosu::KbRightAlt
@@ -75,36 +77,49 @@ class Castlevania < Gosu::Window
 			@belmont.collides(@entry_stone_torches)
 		end
 
-		if @xpos > -571		
-			if 400 <= @belmont.x
-				@belmont.x -= 1.5
-				for i in 0...@entry_stone_torches.length do
-					@entry_stone_torches[i].x -= 1.5
+		if LevelOne? 
+			if !EndOfFirstScreen?
+				if FarRight?
+					@belmont.x -= 1.5
+					@xpos -= 1.5
+					MoveObjectsRight(@entry_stone_torches)
+					MoveObjectsRight(@wall_torches)
+				end	
+				if FarLeft?
+					@xpos += 1.5
+					MoveObjectsLeft(@entry_stone_torches)
+					MoveObjectsLeft(@wall_torches)
 				end
-				@xpos -= 1.5
-			end 
-
-			if 10 >= @belmont.x && @xpos > 1
-				for i in 0...@entry_stone_torches.length do
-					@entry_stone_torches[i].x += 1.5
-				end
-				@xpos += 1.5
 			end
-		end	
+		else
+			if !EndOfSecondScreen?
+				if FarRight?
+					@belmont.x -= 1.5
+					@xpos -= 1.5
+					MoveObjectsRight(@entry_stone_torches)
+					MoveObjectsRight(@wall_torches)
+				end	
+				if FarLeft?
+					@xpos += 1.5
+					MoveObjectsLeft(@entry_stone_torches)
+					MoveObjectsLeft(@wall_torches)
+				end
+			else 
+				if @belmont.x > 580
+					@belmont.x -= 1.5
+				end
+			end
+		end
 
-		if @belmont.x > 518
+		if LevelOne? && EndOfFirstScreen? && @belmont.x > 518
 			@level = 1
 			@background = Gosu::Image.new("NewLevel.png", :tileable => true)
 			@belmont.x = 10
 			@belmont.y = 278
-			@x = 44
-			@entry_stone_torches = []
-			@wall_torches = Array.new
-			for i in 0...5 do 
-				@wall_torches.push(Torch.new(@x, 270))
-				@x += 220
-			end
 		end
+
+		
+		
 
 		
 		
@@ -161,18 +176,51 @@ class Castlevania < Gosu::Window
 			end
 		end
 
-		# for i in 0...@entry_stone_torches.length
-		# 	puts @entry_stone_torches[i].x
-		# end
-puts "Xpos: #{@xpos}"
-puts "BelX: #{@belmont.x}"
+	
+		puts "Xpos: #{@xpos}"
+		puts "BelX: #{@belmont.x}"
 	end
 
 	def button_down(id)
 		close if id == Gosu::KbEscape
 	end
 
+	
 end
+private
+
+	def EndOfFirstScreen?
+		@xpos < -571
+	end
+
+	def EndOfSecondScreen?
+		@xpos < -1850
+	end
+
+	def FarRight?
+		400 <= @belmont.x
+	end
+
+	def FarLeft?
+		10 >= @belmont.x && @xpos > 1
+	end
+
+	def MoveObjectsRight(array)
+		for i in 0...array.length do
+			array[i].x -= 1.5
+		end
+	end
+
+	def MoveObjectsLeft(array)
+		for i in 0...array.length do
+			array[i].x += 1.5
+		end
+	end
+
+	def LevelOne?
+		@level == 0
+	end
+
 
 window = Castlevania.new
 window.show
