@@ -48,16 +48,31 @@ class Belmont
 	end
 
 	def draw(pic)
-		pic.draw(@x, @y, 1)
+		pic.draw(@x, @y, ZOrder::Belmont)
 	end
 
-	def collides(object)
-		if object.reject! {|object| Gosu::distance(@x, @y, object.x, object.y) < 35 } then
+	def whip_collides(object)
+		if object.reject! {|object|  Gosu::distance(@x, @y, object.x, object.y) < 36 } then
 			true
 		else
 			false
 		end
 	end
+
+	def running_collides(objects)
+		if objects.reject! {|objects|  Gosu::distance(@x, @y, objects.x, objects.y) < 20 } then
+			true
+		else
+			false
+		end
+	end
+	# def run_collides(object)
+	# 	if object.reject! {|object|  Gosu::distance(@x, @y, object.x, object.y) < 20 } then
+	# 		true
+	# 	else
+	# 		false
+	# 	end
+	# end
 
 
 end

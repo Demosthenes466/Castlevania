@@ -1,6 +1,8 @@
 
 require_relative "belmont"
-require_relative "Stone_torch"
+require_relative "Stone_Torch"
+require_relative "ghoul"
+require_relative "zorder"
 require 'gosu'
 
 class Castlevania < Gosu::Window
@@ -18,17 +20,24 @@ class Castlevania < Gosu::Window
 		@character_forward = Gosu::Image::load_tiles("cst.png", 30, 60)
 		@character_backward = Gosu::Image::load_tiles("cstback.png", 30, 60)
 		@character_whipping = Gosu::Image::load_tiles("bw.png", 35, 60)
-		@Fuckeverything = Gosu::Image.new("FuckEverything.png", :tileable => true)
-		@FuckeverythingBackwards = Gosu::Image.new("FuckEverythingBackwards.png", :tileable => true)
-
+		@Fuckeverything = Gosu::Image.new("FuckEverything2.png", :tileable => true)
+		@FuckeverythingBackwards = Gosu::Image.new("FuckEverythingBackwards2.png", :tileable => true)
+		@ghoulBackwards = Gosu::Image.new("GhoulRight.png", :tileable => true)
+		@Ghoul = Gosu::Image.new("Ghoul.png", :tileable => true)
 		@belmont = Belmont.new(@character_anim)
 		@backwards = false
 		@jump = false
 		@stone_torch = Gosu::Image.new("Stone Torch.png", :tileable => true)
 		@wall_torch = Gosu::Image.new("TorchN.png", :tileable => true)
 		@entry_stone_torches = Array.new
+		
+		@x = 700
+		@ghouls = Array.new
+		for i in 0..2 do
+			@ghouls.push(Ghoul.new(@x, @ground_level))
+			@x += 100
+		end
 		@x = 44
-
 		for i in 0...5 do 
 			@entry_stone_torches.push(Torch.new(@x, @ground_level))
 			@x += 220
@@ -37,7 +46,7 @@ class Castlevania < Gosu::Window
 		@x = 44
 		@wall_torches = Array.new
 		for i in 0...5 do 
-			@wall_torches.push(Torch.new(@x, 270))
+			@wall_torches.push(Torch.new(@x, 275))
 			@x += 250
 		end
 		@jumping = false
@@ -74,19 +83,24 @@ class Castlevania < Gosu::Window
 		if Gosu::button_down? Gosu::KbRightAlt
 			@start_time = Gosu.milliseconds
 			@belmont.whip = true
-			@belmont.collides(@entry_stone_torches)
+			if LevelOne?
+				@belmont.whip_collides(@entry_stone_torches)
+			else
+				@belmont.whip_collides(@ghouls)
+				@belmont.whip_collides(@wall_torches)
+			end
 		end
 
 		if LevelOne? 
 			if !EndOfFirstScreen?
 				if FarRight?
-					@belmont.x -= 1.5
-					@xpos -= 1.5
+					@belmont.x -= @belmont.speed
+					@xpos -= @belmont.speed
 					MoveObjectsRight(@entry_stone_torches)
 					MoveObjectsRight(@wall_torches)
 				end	
 				if FarLeft?
-					@xpos += 1.5
+					@xpos += @belmont.speed
 					MoveObjectsLeft(@entry_stone_torches)
 					MoveObjectsLeft(@wall_torches)
 				end
@@ -94,37 +108,54 @@ class Castlevania < Gosu::Window
 		else
 			if !EndOfSecondScreen?
 				if FarRight?
-					@belmont.x -= 1.5
-					@xpos -= 1.5
+					@belmont.x -= @belmont.speed
+					@xpos -= @belmont.speed
 					MoveObjectsRight(@entry_stone_torches)
 					MoveObjectsRight(@wall_torches)
+					for i in 0...@ghouls.length do
+						@ghouls[i].x -= @belmont.speed 
+					end
 				end	
 				if FarLeft?
-					@xpos += 1.5
+					@xpos += @belmont.speed
 					MoveObjectsLeft(@entry_stone_torches)
 					MoveObjectsLeft(@wall_torches)
 				end
 			else 
 				if @belmont.x > 580
-					@belmont.x -= 1.5
+					@belmont.x -= @belmont.speed
 				end
 			end
 		end
 
-		if LevelOne? && EndOfFirstScreen? && @belmont.x > 5
+		if !LevelOne?
+			ChaseBelmont()
+		end
+
+		if LevelOne? && EndOfFirstScreen? && @belmont.x > 517
 			@level = 1
 			@background = Gosu::Image.new("NewLevel.png", :tileable => true)
 			@belmont.x = 10
 			@belmont.y = 278
 		end
-	end 
+	@belmont.running_collides(@ghouls)	
+	end
+
 
 	def draw
 		@background.draw(@xpos,0,0)
 		if LevelOne?
-			DrawObjects(@entry_stone_torches)
+			DrawObjects(@entry_stone_torches, @stone_torch)
 		else
-			DrawObjects(@wall_torches)
+			DrawObjects(@wall_torches, @wall_torch)
+			for i in 0...@ghouls.length do 
+				if @ghouls[i].x > @belmont.x 
+					@ghouls[i].draw(@Ghoul)
+				else
+					@ghouls[i].draw(@ghoulBackwards)
+				end
+			end
+
 		end
 		if ForwardWhipping?
 			WhipForward()
@@ -158,8 +189,8 @@ class Castlevania < Gosu::Window
 		end
 
 	
-		puts "Xpos: #{@xpos}"
-		puts "BelX: #{@belmont.x}"
+		# puts "Xpos: #{@xpos}"
+		# puts "BelX: #{@belmont.x}"
 	end
 
 	def button_down(id)
@@ -188,13 +219,13 @@ private
 
 	def MoveObjectsRight(array)
 		for i in 0...array.length do
-			array[i].x -= 1.5
+			array[i].x -= @belmont.speed
 		end
 	end
 
 	def MoveObjectsLeft(array)
 		for i in 0...array.length do
-			array[i].x += 1.5
+			array[i].x += @belmont.speed
 		end
 	end
 
@@ -254,9 +285,19 @@ private
 		end
 	end
 
-	def DrawObjects(array)
+	def DrawObjects(array, pic)
 		for i in 0...array.length do
-			array[i].draw(@stone_torch)
+			array[i].draw(pic)
+		end
+	end
+
+	def ChaseBelmont()
+		for i in 0...@ghouls.length do
+			if @ghouls[i].x < @belmont.x 
+				@ghouls[i].x += 0.75
+			else
+				@ghouls[i].x -= 0.75
+			end
 		end
 	end
 

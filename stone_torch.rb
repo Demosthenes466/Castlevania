@@ -8,7 +8,7 @@ class Torch
 	end
 
 	def draw(pic)
-		pic.draw(@x, @y - 5, 1)
+		pic.draw(@x, @y - 5, ZOrder::Torch)
 	end
 end
 
