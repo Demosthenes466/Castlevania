@@ -53,7 +53,7 @@ class Belmont
 	end
 
 	def whip_collides(object)
-		if object.reject! {|object|  Gosu::distance(@x, @y, object.x, object.y) < 40 } then
+		if object.reject! {|object| Gosu::distance(@x, @y, object.x, object.y) < 40 && Gosu::distance(@x, @y, object.x, object.y) > 20 }
 			true
 		else
 			false
