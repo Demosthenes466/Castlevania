@@ -1,8 +1,6 @@
 
-
 class Belmont
-	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground, :whip, :xpos, :collides, :torchx, :speed, :health
-
+	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground, :whip, :xpos, :collides, :torchx, :speed, :health, :heartx, :score, :stair_start
 	def initialize(animation)
 		@on_ground = true
 		@screenx = 10
@@ -16,6 +14,10 @@ class Belmont
 		@collides = false
 		@speed = 1
 		@health = 6
+		@heartx = 0
+		@score = 0
+		@stair_start = false
+		@stair_down = false
 	end
 
 	def jump_action
@@ -35,6 +37,15 @@ class Belmont
 
 	def forward
 			@x += @speed
+			if @stair_start == true
+				@y -= @speed
+			elsif @stair_down == true
+				@y += speed
+			end
+	end
+
+	def stair_up
+
 	end
 
 	def backward
@@ -53,7 +64,8 @@ class Belmont
 	end
 
 	def whip_collides(object)
-		if object.reject! {|object| Gosu::distance(@x, @y, object.x, object.y) < 40 && Gosu::distance(@x, @y, object.x, object.y) > 20 }
+		if object.reject! {|object| Gosu::distance(@x, @y, object.x, object.y) < 40 && Gosu::distance(@x, @y, object.x, object.y) > 10 }
+			@score += 10
 			true
 		else
 			false
@@ -68,5 +80,4 @@ class Belmont
 			false
 		end
 	end
-
 end

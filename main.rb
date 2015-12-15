@@ -1,4 +1,3 @@
-
 require_relative "belmont"
 require_relative "Stone_Torch"
 require_relative "ghoul"
@@ -7,96 +6,83 @@ require_relative "health"
 require 'gosu'
 
 class Castlevania < Gosu::Window
-	attr_accessor :backwards, :standing, :x, :y, :on_ground, :x, :collides, :health
+	attr_accessor :backwards, :standing, :x, :y, :on_ground, :x, :collides, :health, :heartx, :score, :stair_start
 
 	def initialize
 		@xpos = 0
 		@ground_level = 283
 		super 600, 360
-		@background = Gosu::Image.new("background2.png", :tileable => true)
+		@background = Gosu::Image.new("media/background2.png", :tileable => true)
+		@music = Gosu::Song.new("music.wav")
 		@level = 0
-
+		@GameOver = false
+		@music.play(true)
 		@font = Gosu::Font.new(20)
 
-		@character_standing_forward = Gosu::Image.new("belmont copy.png", :tileable => true)
-		@character_standing_backward = Gosu::Image.new("belmontback.png", :tileable => true)
-		@character_forward = Gosu::Image::load_tiles("cst.png", 30, 60)
-		@character_backward = Gosu::Image::load_tiles("cstback.png", 30, 60)
-		# @character_whipping = Gosu::Image::load_tiles("bw.png", 35, 60)
-		@Fuckeverything = Gosu::Image.new("FuckEverything2.png", :tileable => true)
-		@FuckeverythingBackwards = Gosu::Image.new("FuckEverythingBackwards2.png", :tileable => true)
-
+		@character_standing_forward = Gosu::Image.new("media/belmont copy.png", :tileable => true)
+		@character_standing_backward = Gosu::Image.new("media/belmontback.png", :tileable => true)
+		@character_forward = Gosu::Image::load_tiles("media/cst.png", 30, 60)
+		@character_backward = Gosu::Image::load_tiles("media/cstback.png", 30, 60)
+		@Fuckeverything = Gosu::Image.new("media/FuckEverything2.png", :tileable => true)
+		@FuckeverythingBackwards = Gosu::Image.new("media/FuckEverythingBackwards2.png", :tileable => true)
 		
 
-		@ghoulBackwards = Gosu::Image.new("GhoulRight.png", :tileable => true)
-		@Ghoul = Gosu::Image.new("Ghoul.png", :tileable => true)
+		@ghoulBackwards = Gosu::Image.new("media/GhoulRight.png", :tileable => true)
+		@Ghoul = Gosu::Image.new("media/Ghoul.png", :tileable => true)
 		@belmont = Belmont.new(@character_anim)
 		@backwards = false
 		@jump = false
-		@stone_torch = Gosu::Image.new("Stone Torch.png", :tileable => true)
-		@wall_torch = Gosu::Image.new("TorchN.png", :tileable => true)
-		@entry_stone_torches = Array.new
-		
-		@x = 700
-		@ghouls = Array.new
-		for i in 0..10 do
-			@ghouls.push(Ghoul.new(@x, @ground_level))
-			@x += 75
-		end
-		@x = 44
-		for i in 0...5 do 
-			@entry_stone_torches.push(Torch.new(@x, @ground_level))
-			@x += 220
-		end
-
-		@x = 44
-		@wall_torches = Array.new
-		for i in 0...5 do 
-			@wall_torches.push(Torch.new(@x, 275))
-			@x += 250
-		end
+		@stone_torch = Gosu::Image.new("media/Stone Torch.png", :tileable => true)
+		@wall_torch = Gosu::Image.new("media/TorchN.png", :tileable => true)
+		SetGhoulArray()
+		@ghoulSpeed = 1.25
+		SetStoneTorchArray()
+		SetWallTorchArray()
 		@jumping = false
-		@seconds = 0
 		@last_time = Gosu::milliseconds()
 		@start_time = 0
 
-		@belmontHealthBlock = Gosu::Image.new("HealthBlock.png", :tileable => true)
-		@belmontHealth = Array.new
-		@healthx = 10
-		for i in 0...@belmont.health do 
-			@belmontHealth.push(Health.new(@healthx, 30))
-			@healthx += 10
-		end
-		@GameOver = false
-		@ghoulSpeed = 1.25
+		@belmontHealthBlock = Gosu::Image.new("media/HealthBlock.png", :tileable => true)
+		SetHealthArray()
 
-
+		
+		
 	end
 
 	def update
 		@standing = true
-		if !@GameOver
+		if !@GameOver && !Win?
+			if !LevelOne?
+				if (@xpos < -1630 && @belmont.x > 390) ||(@xpos < -1800 && @belmont.x > 175 && @belmont.x < 190)
+					if Gosu::button_down? Gosu::KbUp
+						@belmont.stair_start = true 
+					end
+				end
+				if @belmont.y < 120
+					@belmont.stair_start = false
+				end
+			end
+			if Gosu::button_down? Gosu::KbO
+				@ghouls.clear
+			end
 			if Gosu::button_down? Gosu::KbP
 				@belmont.speed = 5
 			end
-
 			if Gosu::button_down? Gosu::KbRight
-					@belmont.forward
-					@backwards = false
-					@standing = false 
+				@belmont.forward
+				@backwards = false
+				@standing = false 
 			end
 			if Gosu::button_down? Gosu::KbLeft
-					@belmont.backward
-					@backwards = true
-					@standing = false
+				@belmont.backward
+				@backwards = true
+				@standing = false
 			end
-			
 			if (Gosu::button_down? Gosu::KbSpace) 
 				if (!@jumping)
 					@belmont.jump = true
 				end
 			end
-
 			if Gosu::button_down? Gosu::KbRightAlt
 				@start_time = Gosu.milliseconds
 				@belmont.whip = true
@@ -107,7 +93,6 @@ class Castlevania < Gosu::Window
 					@belmont.whip_collides(@wall_torches)
 				end
 			end
-
 			if LevelOne? 
 				if !EndOfFirstScreen?
 					if FarRight?
@@ -144,85 +129,77 @@ class Castlevania < Gosu::Window
 					end
 				end
 			end
-
 			if !LevelOne?
 				ChaseBelmont()
 			end
-
 			if LevelOne? && EndOfFirstScreen? && @belmont.x > 517
 				@level = 1
-				@background = Gosu::Image.new("NewLevel.png", :tileable => true)
+				@background = Gosu::Image.new("media/NewLevel.png", :tileable => true)
 				@belmont.x = 10
 				@belmont.y = 278
 			end
-		@belmont.running_collides(@ghouls)	
-	end
-	end
+		@belmont.running_collides(@ghouls)
 
+		end
+	end
 
 	def draw
 		@background.draw(@xpos,0,0)
 		if @belmont.health == 0
 			@GameOver = true
 		end
-		if !@GameOver
-			for i in 0...@belmont.health do 
-				@belmontHealth[i].draw(@belmontHealthBlock)
-			end
-			@font.draw("Player Health", 5, 10, 1, 1.0, 1.0, 0xff_ffffff)
 
-			if LevelOne?
-				DrawObjects(@entry_stone_torches, @stone_torch)
-			else
-				DrawObjects(@wall_torches, @wall_torch)
-				for i in 0...@ghouls.length do 
-					if @ghouls[i].x > @belmont.x 
-						@ghouls[i].draw(@Ghoul)
+		if Win?
+			@font.draw("You win!", 200, 180, 1, 4.0, 4.0, 0xff_ff0000)
+			@font.draw("Score: #{@belmont.score}", 200, 260, 1, 2.0, 2.0, 0xff_ff0000)
+		else
+			if !@GameOver
+				for i in 0...@belmont.health do 
+					@belmontHealth[i].draw(@belmontHealthBlock)
+				end
+				@font.draw("Score:  #{@belmont.score}", 5, 50, 1, 1.0, 1.0, 0xff_ffffff)
+				@font.draw("Player Health", 5, 10, 1, 1.0, 1.0, 0xff_ffffff)
+
+				if LevelOne?
+					DrawObjects(@entry_stone_torches, @stone_torch)
+				else
+					DrawObjects(@wall_torches, @wall_torch)
+					DrawCreeps(@ghouls, @Ghoul, @GhoulRight)
+				end
+				if ForwardWhipping?
+					WhipForward()
+				elsif BackwardWhipping?
+					WhipBackward()
+				elsif ForwardWhipJump?
+					@belmont.jump_action
+					@belmont.draw(@Fuckeverything)
+				elsif BackwardWhipJump?
+					@belmont.jump_action
+					@belmont.draw(@FuckeverythingBackwards)
+				elsif ForwardJumping?
+					@belmont.jump_action
+					@belmont.draw(@character_standing_forward)
+				elsif BackwardJumping?
+					@belmont.jump_action
+					@belmont.draw(@character_standing_backward)
+				elsif StraightJump?
+					@belmont.jump_action
+					@belmont.draw(@character_standing_forward)
+				elsif WalkingForward?
+						@belmont.animate(Gosu::milliseconds, @character_forward, 150)
+				elsif WalkingBackward?
+						@belmont.animate(Gosu::milliseconds, @character_backward, 150)
+				else
+					if !@backwards
+						@belmont.draw(@character_standing_forward)
 					else
-						@ghouls[i].draw(@ghoulBackwards)
+						@belmont.draw(@character_standing_backward)
 					end
 				end
-
-			end
-			if ForwardWhipping?
-				WhipForward()
-			elsif BackwardWhipping?
-				WhipBackward()
-			elsif ForwardWhipJump?
-				@belmont.jump_action
-				@belmont.draw(@Fuckeverything)
-			elsif BackwardWhipJump?
-				@belmont.jump_action
-				@belmont.draw(@FuckeverythingBackwards)
-			elsif ForwardJumping?
-				@belmont.jump_action
-				@belmont.draw(@character_standing_forward)
-			elsif BackwardJumping?
-				@belmont.jump_action
-				@belmont.draw(@character_standing_backward)
-			elsif StraightJump?
-				@belmont.jump_action
-				@belmont.draw(@character_standing_forward)
-			elsif WalkingForward?
-					@belmont.animate(Gosu::milliseconds, @character_forward, 150)
-			elsif WalkingBackward?
-					@belmont.animate(Gosu::milliseconds, @character_backward, 150)
 			else
-				if !@backwards
-					@belmont.draw(@character_standing_forward)
-				else
-					@belmont.draw(@character_standing_backward)
-				end
+				@font.draw("Game Over", 200, 180, 1, 3.0, 3.0, 0xff_ff0000)
 			end
-		else
-			@font.draw("Game Over", 200, 180, 1, 3.0, 3.0, 0xff_ff0000)
 		end
-
-
-
-	
-		# puts "Xpos: #{@xpos}"
-		# puts "BelX: #{@belmont.x}"
 	end
 
 	def button_down(id)
@@ -232,6 +209,51 @@ class Castlevania < Gosu::Window
 	
 end
 private
+	def DrawCreeps(creeps, picF, picB)
+		for i in 0...creeps.length do 
+			if creeps[i].x > @belmont.x 
+				creeps[i].draw(picF)
+			else
+				creeps[i].draw(picB)
+			end
+		end
+	end
+
+	def SetGhoulArray()
+		@x = 700
+		@ghouls = Array.new
+		for i in 0..5 do
+			@ghouls.push(Ghoul.new(@x, @ground_level))
+			@x += 75
+		end
+	end
+
+	def SetStoneTorchArray()
+		@x = 44
+		@entry_stone_torches = Array.new
+		for i in 0...5 do 
+			@entry_stone_torches.push(Torch.new(@x, @ground_level))
+			@x += 220
+		end
+	end
+
+	def SetWallTorchArray()
+		@x = 44
+		@wall_torches = Array.new
+		for i in 0...5 do 
+			@wall_torches.push(Torch.new(@x, 275))
+			@x += 250
+		end
+	end
+
+	def SetHealthArray()
+		@belmontHealth = Array.new
+		@healthx = 10
+		for i in 0...@belmont.health do 
+			@belmontHealth.push(Health.new(@healthx, 30))
+			@healthx += 10
+		end
+	end
 
 	def EndOfFirstScreen?
 		@xpos < -571
@@ -302,7 +324,7 @@ private
 	end
 
 	def WhipForward()
-		if Gosu::milliseconds - @start_time < 300
+		if Gosu::milliseconds - @start_time < 200
 			@belmont.draw(@Fuckeverything)
 		else
 			@belmont.whip = false
@@ -333,8 +355,11 @@ private
 		end
 	end
 
-
-
+	def Win?()
+		if @belmont.x > 550 && @belmont.y < 125
+			true
+		end
+	end
 window = Castlevania.new
 window.show
 
