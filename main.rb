@@ -22,7 +22,7 @@ class Castlevania < Gosu::Window
 		@character_standing_backward = Gosu::Image.new("belmontback.png", :tileable => true)
 		@character_forward = Gosu::Image::load_tiles("cst.png", 30, 60)
 		@character_backward = Gosu::Image::load_tiles("cstback.png", 30, 60)
-		@character_whipping = Gosu::Image::load_tiles("bw.png", 35, 60)
+		# @character_whipping = Gosu::Image::load_tiles("bw.png", 35, 60)
 		@Fuckeverything = Gosu::Image.new("FuckEverything2.png", :tileable => true)
 		@FuckeverythingBackwards = Gosu::Image.new("FuckEverythingBackwards2.png", :tileable => true)
 
