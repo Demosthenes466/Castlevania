@@ -13,7 +13,7 @@ class Castlevania < Gosu::Window
 		@ground_level = 283
 		super 600, 360
 		@background = Gosu::Image.new("media/background2.png", :tileable => true)
-		@music = Gosu::Song.new("media/music.wav")
+		@music = Gosu::Song.new("music.wav")
 		@level = 0
 		@GameOver = false
 		@music.play(true)
