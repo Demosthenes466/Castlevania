@@ -18,42 +18,38 @@ class Castlevania < Gosu::Window
 		@GameOver = false
 		@music.play(true)
 		@font = Gosu::Font.new(20)
-
 		@character_standing_forward = Gosu::Image.new("media/belmont copy.png", :tileable => true)
 		@character_standing_backward = Gosu::Image.new("media/belmontback.png", :tileable => true)
 		@character_forward = Gosu::Image::load_tiles("media/cst.png", 30, 60)
 		@character_backward = Gosu::Image::load_tiles("media/cstback.png", 30, 60)
 		@Fuckeverything = Gosu::Image.new("media/FuckEverything2.png", :tileable => true)
 		@FuckeverythingBackwards = Gosu::Image.new("media/FuckEverythingBackwards2.png", :tileable => true)
-		
-
 		@ghoulBackwards = Gosu::Image.new("media/GhoulRight.png", :tileable => true)
 		@Ghoul = Gosu::Image.new("media/Ghoul.png", :tileable => true)
+		@stone_torch = Gosu::Image.new("media/Stone Torch.png", :tileable => true)
+		@wall_torch = Gosu::Image.new("media/TorchN.png", :tileable => true)
+		@belmontHealthBlock = Gosu::Image.new("media/HealthBlock.png", :tileable => true)
 		@belmont = Belmont.new(@character_anim)
 		@backwards = false
 		@jump = false
-		@stone_torch = Gosu::Image.new("media/Stone Torch.png", :tileable => true)
-		@wall_torch = Gosu::Image.new("media/TorchN.png", :tileable => true)
-		SetGhoulArray()
+		SetHealthArray()
+		@ghouls = Array.new
 		@ghoulSpeed = 1.25
 		SetStoneTorchArray()
 		SetWallTorchArray()
 		@jumping = false
 		@last_time = Gosu::milliseconds()
-		@start_time = 0
-
-		@belmontHealthBlock = Gosu::Image.new("media/HealthBlock.png", :tileable => true)
-		SetHealthArray()
-
-		
-		
+		@start_time = 0	
+		SetFrontGhoulArray()
 	end
 
 	def update
 		@standing = true
+		
+		
 		if !@GameOver && !Win?
 			if !LevelOne?
-				if (@xpos < -1630 && @belmont.x > 390) ||(@xpos < -1800 && @belmont.x > 175 && @belmont.x < 190)
+				if AtFinalStair?
 					if Gosu::button_down? Gosu::KbUp
 						@belmont.stair_start = true 
 					end
@@ -130,7 +126,15 @@ class Castlevania < Gosu::Window
 				end
 			end
 			if !LevelOne?
+				if rand(100) < 4 then
+					prng = Random.new
+					@xt = @xpos - 100
+					@xl = (@xpos* -1) + 700
+					@x = prng.rand(500..@xl)
+					@ghouls.push(Ghoul.new(@x, 283))
+				end
 				ChaseBelmont()
+				@belmont.running_collides(@ghouls)
 			end
 			if LevelOne? && EndOfFirstScreen? && @belmont.x > 517
 				@level = 1
@@ -138,8 +142,6 @@ class Castlevania < Gosu::Window
 				@belmont.x = 10
 				@belmont.y = 278
 			end
-		@belmont.running_collides(@ghouls)
-
 		end
 	end
 
@@ -148,7 +150,6 @@ class Castlevania < Gosu::Window
 		if @belmont.health == 0
 			@GameOver = true
 		end
-
 		if Win?
 			@font.draw("You win!", 200, 180, 1, 4.0, 4.0, 0xff_ff0000)
 			@font.draw("Score: #{@belmont.score}", 200, 260, 1, 2.0, 2.0, 0xff_ff0000)
@@ -205,10 +206,14 @@ class Castlevania < Gosu::Window
 	def button_down(id)
 		close if id == Gosu::KbEscape
 	end
-
-	
 end
+
 private
+
+	def AtFinalStair?
+		(@xpos < -1630 && @belmont.x > 390) ||(@xpos < -1800 && @belmont.x > 175 && @belmont.x < 190)
+	end
+
 	def DrawCreeps(creeps, picF, picB)
 		for i in 0...creeps.length do 
 			if creeps[i].x > @belmont.x 
@@ -218,16 +223,15 @@ private
 			end
 		end
 	end
-
-	def SetGhoulArray()
-		@x = 700
-		@ghouls = Array.new
-		for i in 0..5 do
+	def SetFrontGhoulArray()
+		prng = Random.new
+		# @x = 700
+		for i in 0..2 do
+			@x = prng.rand(200...700)
 			@ghouls.push(Ghoul.new(@x, @ground_level))
-			@x += 75
 		end
+		
 	end
-
 	def SetStoneTorchArray()
 		@x = 44
 		@entry_stone_torches = Array.new
@@ -236,7 +240,6 @@ private
 			@x += 220
 		end
 	end
-
 	def SetWallTorchArray()
 		@x = 44
 		@wall_torches = Array.new
@@ -245,7 +248,6 @@ private
 			@x += 250
 		end
 	end
-
 	def SetHealthArray()
 		@belmontHealth = Array.new
 		@healthx = 10
@@ -254,75 +256,58 @@ private
 			@healthx += 10
 		end
 	end
-
 	def EndOfFirstScreen?
 		@xpos < -571
 	end
-
 	def EndOfSecondScreen?
 		@xpos < -1850
 	end
-
 	def FarRight?
 		400 <= @belmont.x
 	end
-
 	def FarLeft?
 		10 >= @belmont.x && @xpos > 1
 	end
-
 	def MoveObjectsRight(array)
 		for i in 0...array.length do
 			array[i].x -= @belmont.speed
 		end
 	end
-
 	def MoveObjectsLeft(array)
 		for i in 0...array.length do
 			array[i].x += @belmont.speed
 		end
 	end
-
 	def LevelOne?
 		@level == 0
 	end
-
 	def ForwardWhipping?
 		!@backwards && @belmont.whip && !@belmont.jump
 	end
-
 	def BackwardWhipping?
 		@backwards && @belmont.whip && !@belmont.jump
 	end
-
 	def ForwardWhipJump?
 		(!@backwards && @belmont.whip && @belmont.jump)
 	end
-
 	def BackwardWhipJump?
 		(@backwards && @belmont.whip && @belmont.jump)
 	end
-
 	def ForwardJumping?
 		(!@backwards && @belmont.jump && !@standing)
 	end
-
 	def BackwardJumping?
 		(@backwards && @belmont.jump && !@standing)
 	end
-
 	def StraightJump?
 		(@belmont.jump && @standing)
 	end
-
 	def WalkingForward?
 		(!@backwards && !@standing)
 	end
-
 	def WalkingBackward?
 		(@backwards && !@standing)
 	end
-
 	def WhipForward()
 		if Gosu::milliseconds - @start_time < 200
 			@belmont.draw(@Fuckeverything)
@@ -330,7 +315,6 @@ private
 			@belmont.whip = false
 		end
 	end
-
 	def WhipBackward()
 		if Gosu::milliseconds - @start_time < 200
 			@belmont.draw(@FuckeverythingBackwards)
@@ -338,13 +322,11 @@ private
 			@belmont.whip = false
 		end
 	end
-
 	def DrawObjects(array, pic)
 		for i in 0...array.length do
 			array[i].draw(pic)
 		end
 	end
-
 	def ChaseBelmont()
 		for i in 0...@ghouls.length do
 			if @ghouls[i].x < @belmont.x 
@@ -354,7 +336,6 @@ private
 			end
 		end
 	end
-
 	def Win?()
 		if @belmont.x > 550 && @belmont.y < 125
 			true

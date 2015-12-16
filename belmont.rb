@@ -64,7 +64,7 @@ class Belmont
 	end
 
 	def whip_collides(object)
-		if object.reject! {|object| Gosu::distance(@x, @y, object.x, object.y) < 40 && Gosu::distance(@x, @y, object.x, object.y) > 10 }
+		if object.reject! {|object| Gosu::distance(@x, @y, object.x, object.y) < 40 && Gosu::distance(@x, @y, object.x, object.y) > 20 }
 			@score += 10
 			true
 		else
@@ -73,7 +73,7 @@ class Belmont
 	end
 
 	def running_collides(objects)
-		if objects.reject! {|objects|  Gosu::distance(@x, @y, objects.x, objects.y) < 20 } then
+		if objects.reject! {|objects|  Gosu::distance(@x, 0, objects.x, 0) < 15 } then
 			@health -= 1
 			true
 		else
