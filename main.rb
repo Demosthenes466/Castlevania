@@ -6,14 +6,14 @@ require_relative "health"
 require 'gosu'
 
 class Castlevania < Gosu::Window
-	attr_accessor :backwards, :standing, :x, :y, :on_ground, :x, :collides, :health, :heartx, :score, :stair_start
+	attr_accessor :backwards, :standing, :x, :y, :on_ground
 
 	def initialize
 		@xpos = 0
 		@ground_level = 283
 		super 600, 360
 		@background = Gosu::Image.new("media/background2.png", :tileable => true)
-		@music = Gosu::Song.new("music.wav")
+		@music = Gosu::Song.new("media/music.wav")
 		@level = 0
 		@GameOver = false
 		@music.play(true)
@@ -45,8 +45,6 @@ class Castlevania < Gosu::Window
 
 	def update
 		@standing = true
-		
-		
 		if !@GameOver && !Win?
 			if !LevelOne?
 				if AtFinalStair?
@@ -126,13 +124,7 @@ class Castlevania < Gosu::Window
 				end
 			end
 			if !LevelOne?
-				if rand(100) < 4 && @xpos > -1200
-					prng = Random.new
-					@xt = @xpos - 100
-					@xl = (@xpos* -1) + 500
-					@x = prng.rand(500..@xl)
-					@ghouls.push(Ghoul.new(@x, 283))
-				end
+				RandomGhouls()
 				ChaseBelmont()
 				@belmont.running_collides(@ghouls)
 			end
@@ -320,6 +312,15 @@ private
 			@belmont.draw(@FuckeverythingBackwards)
 		else
 			@belmont.whip = false
+		end
+	end
+	def RandomGhouls()
+		if rand(100) < 4 && @xpos > -1200
+			prng = Random.new
+			@xt = @xpos - 100
+			@xl = (@xpos* -1) + 500
+			@x = prng.rand(500..@xl)
+			@ghouls.push(Ghoul.new(@x, 283))
 		end
 	end
 	def DrawObjects(array, pic)

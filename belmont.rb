@@ -1,6 +1,6 @@
 
 class Belmont
-	attr_accessor :x, :y, :backwards, :standing, :velocity, :jump, :screenx, :on_ground, :whip, :xpos, :collides, :torchx, :speed, :health, :heartx, :score, :stair_start
+	attr_accessor :x, :y, :backwards, :standing, :jump, :screenx, :whip, :xpos, :torchx, :speed, :health, :score, :stair_start
 	def initialize(animation)
 		@on_ground = true
 		@screenx = 10
