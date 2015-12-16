@@ -126,10 +126,10 @@ class Castlevania < Gosu::Window
 				end
 			end
 			if !LevelOne?
-				if rand(100) < 4 then
+				if rand(100) < 4 && @xpos > -1200
 					prng = Random.new
 					@xt = @xpos - 100
-					@xl = (@xpos* -1) + 700
+					@xl = (@xpos* -1) + 500
 					@x = prng.rand(500..@xl)
 					@ghouls.push(Ghoul.new(@x, 283))
 				end
